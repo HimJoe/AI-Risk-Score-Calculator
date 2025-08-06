@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Risk Score Calculator </title>
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -126,6 +128,27 @@
         .calculate-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
         }
         
         .results {
@@ -358,6 +381,10 @@
                 <div class="risk-score" id="riskScore"></div>
                 <div class="risk-level" id="riskLevel"></div>
                 <div class="recommendation" id="recommendation"></div>
+                
+                <button class="download-btn" onclick="downloadPDF()">
+                    📄 Download PDF Report
+                </button>
             </div>
         </div>
         
@@ -488,6 +515,192 @@
             // Show results
             document.getElementById('results').style.display = 'block';
             document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Get current data
+            const projectName = document.getElementById('projectName').value;
+            const useCase = document.getElementById('useCase').value;
+            const stakeholder = document.getElementById('stakeholder').value;
+            const dataTypes = document.getElementById('dataTypes').value;
+            const impact = document.getElementById('impact').value;
+            const likelihood = document.getElementById('likelihood').value;
+            const amplifier = document.getElementById('amplifier').value;
+            const riskScore = document.getElementById('riskScore').textContent;
+            const riskLevel = document.getElementById('riskLevel').textContent;
+            
+            // Calculate risk score for classification
+            const numericRiskScore = parseFloat(riskScore);
+            let riskCategory, riskColor;
+            
+            if (numericRiskScore >= 1 && numericRiskScore <= 6) {
+                riskCategory = 'LOW RISK';
+                riskColor = [40, 167, 69]; // Green
+            } else if (numericRiskScore >= 7 && numericRiskScore <= 12) {
+                riskCategory = 'MEDIUM RISK';
+                riskColor = [255, 193, 7]; // Yellow
+            } else if (numericRiskScore >= 13 && numericRiskScore <= 20) {
+                riskCategory = 'HIGH RISK';
+                riskColor = [220, 53, 69]; // Red
+            } else {
+                riskCategory = 'CRITICAL RISK';
+                riskColor = [52, 58, 64]; // Black
+            }
+            
+            // Set up document
+            doc.setFontSize(20);
+            doc.setTextColor(44, 62, 80);
+            doc.text('AI Risk Assessment Report', 20, 25);
+            
+            // Company info
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Pharma/Biotech AI Deployment Risk Assessment', 20, 35);
+            doc.text(`Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 20, 42);
+            
+            // Risk Score Box
+            doc.setFillColor(riskColor[0], riskColor[1], riskColor[2]);
+            doc.rect(140, 15, 50, 25, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16);
+            doc.text('RISK SCORE', 165, 25, { align: 'center' });
+            doc.setFontSize(20);
+            doc.text(riskScore, 165, 35, { align: 'center' });
+            
+            // Project Information Section
+            let yPos = 60;
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text('PROJECT INFORMATION', 20, yPos);
+            doc.setLineWidth(0.5);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+            
+            yPos += 15;
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            
+            doc.text('Project Name:', 20, yPos);
+            doc.text(projectName, 60, yPos);
+            
+            yPos += 10;
+            doc.text('Primary Stakeholder:', 20, yPos);
+            doc.text(stakeholder, 60, yPos);
+            
+            yPos += 10;
+            doc.text('Data Types:', 20, yPos);
+            const dataTypesLines = doc.splitTextToSize(dataTypes, 130);
+            doc.text(dataTypesLines, 60, yPos);
+            yPos += dataTypesLines.length * 5;
+            
+            yPos += 10;
+            doc.text('Use Case Description:', 20, yPos);
+            yPos += 7;
+            const useCaseLines = doc.splitTextToSize(useCase, 170);
+            doc.text(useCaseLines, 20, yPos);
+            yPos += useCaseLines.length * 5 + 10;
+            
+            // Risk Assessment Section
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text('RISK ASSESSMENT', 20, yPos);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+            
+            yPos += 15;
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            
+            // Get impact text
+            const impactTexts = {
+                '1': '1 - Minimal patient/business impact',
+                '2': '2 - Minor impact, easily correctable',
+                '3': '3 - Moderate impact, requires intervention',
+                '4': '4 - Major impact, significant consequences',
+                '5': '5 - Severe impact, patient safety or regulatory violation'
+            };
+            
+            const likelihoodTexts = {
+                '1': '1 - Very unlikely (< 5% probability)',
+                '2': '2 - Unlikely (5-25% probability)',
+                '3': '3 - Possible (25-50% probability)',
+                '4': '4 - Likely (50-75% probability)',
+                '5': '5 - Very likely (> 75% probability)'
+            };
+            
+            const amplifierTexts = {
+                '0.8': '0.8 - Traditional algorithm with extensive validation',
+                '1.0': '1.0 - Standard ML with good interpretability',
+                '1.2': '1.2 - Complex ML with limited interpretability',
+                '1.3': '1.3 - Deep learning with black-box characteristics',
+                '1.5': '1.5 - Novel AI with limited precedent'
+            };
+            
+            doc.text('Impact Level:', 20, yPos);
+            doc.text(impactTexts[impact] || impact, 60, yPos);
+            
+            yPos += 10;
+            doc.text('Likelihood:', 20, yPos);
+            doc.text(likelihoodTexts[likelihood] || likelihood, 60, yPos);
+            
+            yPos += 10;
+            doc.text('AI Amplifier:', 20, yPos);
+            const amplifierLines = doc.splitTextToSize(amplifierTexts[amplifier] || amplifier, 130);
+            doc.text(amplifierLines, 60, yPos);
+            yPos += amplifierLines.length * 5;
+            
+            yPos += 15;
+            doc.setFontSize(12);
+            doc.text('Calculation: ' + impact + ' × ' + likelihood + ' × ' + amplifier + ' = ' + riskScore, 20, yPos);
+            
+            // Risk Level Section
+            yPos += 20;
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text('RISK CLASSIFICATION', 20, yPos);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+            
+            yPos += 15;
+            doc.setFontSize(16);
+            doc.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
+            doc.text(riskCategory, 20, yPos);
+            
+            // Recommendations
+            yPos += 20;
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text('DEPLOYMENT RECOMMENDATIONS', 20, yPos);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+            
+            yPos += 15;
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            
+            let recommendations = '';
+            if (numericRiskScore >= 1 && numericRiskScore <= 6) {
+                recommendations = 'PROCEED WITH STANDARD MONITORING\n• Implement basic performance monitoring dashboards\n• Conduct quarterly risk reviews\n• Maintain standard documentation and audit trails\n• Follow routine change management procedures\n• Annual control effectiveness assessment';
+            } else if (numericRiskScore >= 7 && numericRiskScore <= 12) {
+                recommendations = 'PROCEED WITH ENHANCED MONITORING + STAGED ROLLOUT\n• Implement enhanced real-time monitoring with automated alerts\n• Conduct staged rollout (pilot → limited → full deployment)\n• Monthly performance and bias assessments\n• Establish human-in-the-loop mechanisms\n• Semi-annual risk reviews and control testing';
+            } else if (numericRiskScore >= 13 && numericRiskScore <= 20) {
+                recommendations = 'ADDITIONAL CONTROLS REQUIRED BEFORE DEPLOYMENT\n• Implement comprehensive bias testing and fairness assessments\n• Require independent third-party validation\n• Establish robust human oversight and decision boundaries\n• Implement advanced explainability and transparency measures\n• Weekly monitoring and monthly risk assessments';
+            } else {
+                recommendations = 'DEPLOYMENT BLOCKED - FUNDAMENTAL RISK REDUCTION REQUIRED\n• Conduct fundamental redesign of AI system architecture\n• Implement extensive validation with multiple independent assessments\n• Establish comprehensive regulatory approval pathway\n• Develop robust fallback and rollback mechanisms\n• Require board-level risk acceptance for deployment';
+            }
+            
+            const recommendationLines = doc.splitTextToSize(recommendations, 170);
+            doc.text(recommendationLines, 20, yPos);
+            
+            // Footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Created by: Himanshu Joshi | GitHub: HimJoe | © 2025 All rights reserved', 20, pageHeight - 15);
+            doc.text('AI Risk Score Calculator - Pharma/Biotech Compliance Tool', 20, pageHeight - 8);
+            
+            // Save the PDF
+            const fileName = `AI_Risk_Assessment_${projectName.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
         }
     </script>
 </body>
