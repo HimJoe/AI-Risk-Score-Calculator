@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Risk Score Calculator - Pharma/Biotech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .scale-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .results {
+            display: none;
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .risk-score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .risk-level {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 20px 0;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        
+        .green {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .yellow {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        
+        .red {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .black {
+            background: #343a40;
+            color: white;
+            border: 2px solid #495057;
+        }
+        
+        .recommendation {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .use-case-summary {
+            background: #f1f3f4;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .use-case-summary h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .calculation-breakdown {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .calculation-breakdown h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .calculation-step {
+            margin: 10px 0;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Risk Score Calculator</h1>
+            <p>Pharma/Biotech AI Deployment Risk Assessment Tool</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-grid">
+                <div class="form-section">
+                    <h3>Use Case Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="projectName">Project/System Name:</label>
+                        <input type="text" id="projectName" placeholder="Enter AI system name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="useCase">Use Case Description:</label>
+                        <textarea id="useCase" placeholder="Describe the AI application, its purpose, and intended users"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="stakeholder">Primary Stakeholder:</label>
+                        <select id="stakeholder">
+                            <option value="">Select stakeholder</option>
+                            <option value="Clinical Research">Clinical Research</option>
+                            <option value="Medical Affairs">Medical Affairs</option>
+                            <option value="Regulatory Affairs">Regulatory Affairs</option>
+                            <option value="Pharmacovigilance">Pharmacovigilance</option>
+                            <option value="Manufacturing">Manufacturing</option>
+                            <option value="IT/Data Science">IT/Data Science</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Quality Assurance">Quality Assurance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dataTypes">Data Types Involved:</label>
+                        <textarea id="dataTypes" placeholder="e.g., Patient data, Clinical trial data, Manufacturing data, etc."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Risk Assessment Parameters</h3>
+                    
+                    <div class="form-group">
+                        <label for="impact">Impact Level (1-5):</label>
+                        <select id="impact">
+                            <option value="">Select impact level</option>
+                            <option value="1">1 - Minimal patient/business impact</option>
+                            <option value="2">2 - Minor impact, easily correctable</option>
+                            <option value="3">3 - Moderate impact, requires intervention</option>
+                            <option value="4">4 - Major impact, significant consequences</option>
+                            <option value="5">5 - Severe impact, patient safety or regulatory violation</option>
+                        </select>
+                        <div class="scale-info">
+                            <strong>Impact Scale:</strong> Consider potential consequences if the AI system fails or produces incorrect results. Focus on patient safety, regulatory compliance, and business continuity.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="likelihood">Likelihood (1-5):</label>
+                        <select id="likelihood">
+                            <option value="">Select likelihood</option>
+                            <option value="1">1 - Very unlikely (< 5% probability)</option>
+                            <option value="2">2 - Unlikely (5-25% probability)</option>
+                            <option value="3">3 - Possible (25-50% probability)</option>
+                            <option value="4">4 - Likely (50-75% probability)</option>
+                            <option value="5">5 - Very likely (> 75% probability)</option>
+                        </select>
+                        <div class="scale-info">
+                            <strong>Likelihood Scale:</strong> Assess the probability of the AI system experiencing issues based on complexity, data quality, validation extent, and operational environment.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amplifier">AI-Specific Amplifier (0.8-1.5):</label>
+                        <select id="amplifier">
+                            <option value="">Select AI complexity</option>
+                            <option value="0.8">0.8 - Traditional algorithm with extensive validation</option>
+                            <option value="1.0">1.0 - Standard ML with good interpretability</option>
+                            <option value="1.2">1.2 - Complex ML with limited interpretability</option>
+                            <option value="1.3">1.3 - Deep learning with black-box characteristics</option>
+                            <option value="1.5">1.5 - Novel AI with limited precedent</option>
+                        </select>
+                        <div class="scale-info">
+                            <strong>AI Amplifier:</strong> This factor accounts for the inherent risks associated with different AI technologies, interpretability challenges, and validation maturity.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateRisk()">Calculate Risk Score</button>
+            
+            <div id="results" class="results">
+                <div class="use-case-summary">
+                    <h4>Use Case Summary</h4>
+                    <div id="summaryContent"></div>
+                </div>
+                
+                <div class="calculation-breakdown">
+                    <h4>Risk Calculation</h4>
+                    <div id="calculationSteps"></div>
+                </div>
+                
+                <div class="risk-score" id="riskScore"></div>
+                <div class="risk-level" id="riskLevel"></div>
+                <div class="recommendation" id="recommendation"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateRisk() {
+            const projectName = document.getElementById('projectName').value;
+            const useCase = document.getElementById('useCase').value;
+            const stakeholder = document.getElementById('stakeholder').value;
+            const dataTypes = document.getElementById('dataTypes').value;
+            const impact = parseFloat(document.getElementById('impact').value);
+            const likelihood = parseFloat(document.getElementById('likelihood').value);
+            const amplifier = parseFloat(document.getElementById('amplifier').value);
+            
+            // Validation
+            if (!projectName || !useCase || !stakeholder || !dataTypes || !impact || !likelihood || !amplifier) {
+                alert('Please fill in all fields before calculating the risk score.');
+                return;
+            }
+            
+            // Calculate risk score
+            const riskScore = Math.round((impact * likelihood * amplifier) * 10) / 10;
+            
+            // Determine risk level and recommendations
+            let riskLevel, riskClass, recommendation, bgColor;
+            
+            if (riskScore >= 1 && riskScore <= 6) {
+                riskLevel = 'GREEN - Low Risk';
+                riskClass = 'green';
+                bgColor = '#d4edda';
+                recommendation = `
+                    <h4>✅ Proceed with Standard Monitoring</h4>
+                    <p><strong>Deployment Decision:</strong> Approved for deployment with standard operational controls.</p>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Implement basic performance monitoring dashboards</li>
+                        <li>Conduct quarterly risk reviews</li>
+                        <li>Maintain standard documentation and audit trails</li>
+                        <li>Follow routine change management procedures</li>
+                        <li>Annual control effectiveness assessment</li>
+                    </ul>
+                `;
+            } else if (riskScore >= 7 && riskScore <= 12) {
+                riskLevel = 'YELLOW - Medium Risk';
+                riskClass = 'yellow';
+                bgColor = '#fff3cd';
+                recommendation = `
+                    <h4>⚠️ Proceed with Enhanced Monitoring + Staged Rollout</h4>
+                    <p><strong>Deployment Decision:</strong> Approved with additional controls and phased implementation.</p>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Implement enhanced real-time monitoring with automated alerts</li>
+                        <li>Conduct staged rollout (pilot → limited → full deployment)</li>
+                        <li>Monthly performance and bias assessments</li>
+                        <li>Establish human-in-the-loop mechanisms</li>
+                        <li>Semi-annual risk reviews and control testing</li>
+                        <li>Enhanced incident response procedures</li>
+                    </ul>
+                `;
+            } else if (riskScore >= 13 && riskScore <= 20) {
+                riskLevel = 'RED - High Risk';
+                riskClass = 'red';
+                bgColor = '#f8d7da';
+                recommendation = `
+                    <h4>🚨 Additional Controls Required Before Deployment</h4>
+                    <p><strong>Deployment Decision:</strong> Deployment CONDITIONAL on implementing additional risk mitigation measures.</p>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Implement comprehensive bias testing and fairness assessments</li>
+                        <li>Require independent third-party validation</li>
+                        <li>Establish robust human oversight and decision boundaries</li>
+                        <li>Implement advanced explainability and transparency measures</li>
+                        <li>Weekly monitoring and monthly risk assessments</li>
+                        <li>Regulatory pre-submission consultation (if applicable)</li>
+                        <li>Enhanced staff training and competency assessments</li>
+                    </ul>
+                `;
+            } else {
+                riskLevel = 'BLACK - Critical Risk';
+                riskClass = 'black';
+                bgColor = '#343a40';
+                recommendation = `
+                    <h4>🛑 Deployment Blocked - Fundamental Risk Reduction Required</h4>
+                    <p><strong>Deployment Decision:</strong> DEPLOYMENT BLOCKED until significant risk reduction is achieved.</p>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Conduct fundamental redesign of AI system architecture</li>
+                        <li>Implement extensive validation with multiple independent assessments</li>
+                        <li>Establish comprehensive regulatory approval pathway</li>
+                        <li>Develop robust fallback and rollback mechanisms</li>
+                        <li>Require board-level risk acceptance for deployment</li>
+                        <li>Consider alternative non-AI solutions</li>
+                        <li>Engage with regulatory authorities before proceeding</li>
+                    </ul>
+                `;
+            }
+            
+            // Update results
+            document.getElementById('summaryContent').innerHTML = `
+                <p><strong>Project:</strong> ${projectName}</p>
+                <p><strong>Stakeholder:</strong> ${stakeholder}</p>
+                <p><strong>Use Case:</strong> ${useCase}</p>
+                <p><strong>Data Types:</strong> ${dataTypes}</p>
+            `;
+            
+            document.getElementById('calculationSteps').innerHTML = `
+                <div class="calculation-step"><strong>Impact Score:</strong> ${impact}</div>
+                <div class="calculation-step"><strong>Likelihood Score:</strong> ${likelihood}</div>
+                <div class="calculation-step"><strong>AI Amplifier:</strong> ${amplifier}</div>
+                <div class="calculation-step" style="border-top: 2px solid #dee2e6; padding-top: 10px; margin-top: 15px;">
+                    <strong>Calculation:</strong> ${impact} × ${likelihood} × ${amplifier} = <strong>${riskScore}</strong>
+                </div>
+            `;
+            
+            document.getElementById('riskScore').textContent = riskScore;
+            document.getElementById('riskLevel').textContent = riskLevel;
+            document.getElementById('riskLevel').className = `risk-level ${riskClass}`;
+            document.getElementById('recommendation').innerHTML = recommendation;
+            document.getElementById('recommendation').style.backgroundColor = bgColor;
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
