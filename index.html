@@ -558,7 +558,7 @@
             // Company info
             doc.setFontSize(12);
             doc.setTextColor(100, 100, 100);
-            doc.text('Pharma/Biotech AI Deployment Risk Assessment', 20, 35);
+            doc.text('Deployment Risk Assessment', 20, 35);
             doc.text(`Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 20, 42);
             
             // Risk Score Box
@@ -696,7 +696,7 @@
             doc.setFontSize(10);
             doc.setTextColor(100, 100, 100);
             doc.text('Created by: Himanshu Joshi | GitHub: HimJoe | © 2025 All rights reserved', 20, pageHeight - 15);
-            doc.text('AI Risk Score Calculator - Pharma/Biotech Compliance Tool', 20, pageHeight - 8);
+            doc.text('AI Risk Score Calculator - Compliance Tool', 20, pageHeight - 8);
             
             // Save the PDF
             const fileName = `AI_Risk_Assessment_${projectName.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
